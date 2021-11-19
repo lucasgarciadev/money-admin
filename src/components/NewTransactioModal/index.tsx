@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useContext } from 'react';
 
 import * as C from './styles'
 import Modal from 'react-modal';
@@ -6,7 +6,10 @@ import Modal from 'react-modal';
 import closeImg from '../../assets/btn-fechar.svg';
 import incomeImg from '../../assets/entradas.svg';
 import outcomeImg from '../../assets/saidas.svg';
-import { api } from '../../services/api';
+
+import { useTransactions } from '../../hooks/useTransactions';
+
+// import { TransactionContext } from '../../hooks/useTransactions';
 
 
 interface NewTransactionModalProps {
@@ -16,19 +19,29 @@ interface NewTransactionModalProps {
 
 export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionModalProps) {
 
+    const { createTransaction } =  useTransactions();
+
     const [type, setType] = useState('');
-
     const [title, setTitle] = useState('');
-    const [value, setValue] = useState(0);
+    const [amount, setAmount] = useState(0);
     const [category, setCategory] = useState('');
-    const [] = useState('');
 
-    function handleCreateNewTransaction(event: FormEvent) {
+    async function handleCreateNewTransaction(event: FormEvent) {
         event.preventDefault();
 
-        const data = {title, value, category, type};
+        await createTransaction({
+            title,
+            amount,
+            category,
+            type
+        });
 
-        api.post('/transactions', data);
+        setTitle('');
+        setAmount(0);
+        setType('');
+        setCategory('');
+
+        onRequestClose()
     }
 
 
@@ -60,8 +73,8 @@ export function NewTransactionModal({ isOpen, onRequestClose }: NewTransactionMo
                 <input 
                     type="number" 
                     placeholder="Valor"
-                    value={value}
-                    onChange={e => setValue(Number(e.target.value))} 
+                    value={amount}
+                    onChange={e => setAmount(Number(e.target.value))} 
                 />
 
                 <C.TransactionTypeContainer>
